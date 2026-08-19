@@ -1,9 +1,17 @@
 --------------
 
+## v5.0.2
+- Updated update.json, module.prop etc.
+
 ## v5.0.1
-- Refined the web interface into a cleaner, KernelSU-inspired dashboard layout.
+## v5.0.2
+- WebUI: finalized the mobile-friendly dashboard and improved spacing, styling, and accessibility.
+- Localization: added translations for Russian, Spanish, Chinese, Japanese, Korean, and Arabic.
+- UX: added contextual hints and an inline info icon with tap-to-toggle behavior for touch devices.
+- Safety: added `save-config.sh` support and safe validation to prevent invalid config writes; autosave remains opt-in.
+- Packaging: bumped module version and update metadata to v5.0.2.
+- Misc: small documentation updates, README and packaging workflow alignment.
 - Reduced the vibecoded look by simplifying the header, spacing, and control styling.
-- Improved configuration helper text and the custom dropdown treatment.
 - Kept the UI compatible with the original LiveBoot config format and safe validation flow.
 
 ## v5.0.0

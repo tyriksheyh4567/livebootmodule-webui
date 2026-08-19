@@ -1,7 +1,7 @@
-id=livebootmagisk
-name=LiveBoot
-version=v5.0.1
-versionCode=050001
-author=Ali Beyaz (avalibeyaz.com/github)
-description=A Magisk, KernelSU and APatch module that enables unix-style (verbose) boot animation for Android devices
-updateJson=https://raw.githubusercontent.com/symbuzzer/livebootmodule/main/update.json
+id=livebootmodule-webui
+name=LiveBoot with WebUI
+version=v5.0.2
+versionCode=050002
+author=Ali Beyaz (avalibeyaz.com/github), tyriksheyh4567
+description=A Magisk, KernelSU and APatch module that enables unix-style (verbose) boot animation for Android devices, adapted to include a built-in WebUI interface for easier module configuration.
+updateJson=https://raw.githubusercontent.com/tyriksheyh4567/livebootmodule-webui/main/update.json
