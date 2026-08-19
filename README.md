@@ -1,47 +1,50 @@
-# LiveBoot Magisk & KernelSU & APatch Module
+# LiveBoot WebUI Module
+
+This repository is a fork of the original LiveBoot Magisk / KernelSU / APatch module, adapted to include a built-in WebUI interface for easier module configuration.
 
 ## Description
 
-- A Magisk, KernelSU and APatch module that enables unix-style (verbose) boot animation for Android devices
-- Magisk, KernelSU and APatch module of [Chainfire](https://github.com/Chainfire)'s [LiveBoot](https://github.com/Chainfire/liveboot) app without any app or UI
+- A Magisk, KernelSU and APatch module that enables unix-style (verbose) boot animation for Android devices.
+- Based on [Chainfire](https://github.com/Chainfire)'s [LiveBoot](https://github.com/Chainfire/liveboot) project.
+- This fork keeps the original root-module functionality and adds a WebUI for configuration instead of relying only on manual file editing.
 
 Preview: https://www.youtube.com/watch?v=N0tqzVWxpJk
 
+## Why this fork exists
+
+The upstream project is a root module that writes its settings to a plain text config file. This fork adds a lightweight web-based configuration page under the module's webroot so users can change options from a root manager or WebUI-compatible environment without editing the config manually.
+
 ## Supported devices & ROMs
 
-It has been successfully tested on many Android 15, 14, 13 and 12 based ROMs. Should work all rooted devices via Magisk, KernelSU and APatch.
+It has been successfully tested on many Android 15, 14, 13 and 12 based ROMs. It should work on rooted devices using Magisk, KernelSU, or APatch.
 
-## Download
+## Install and use
 
-[Releases](https://github.com/symbuzzer/livebootmodule/releases)
+1. Install the module in your root manager.
+2. Open the WebUI of the module in your root manager or compatible WebUI app.
+3. Adjust the boot animation settings in the page.
+4. Copy or save the generated config content into the module's config file if your setup requires manual installation.
 
-## Changelog
+> Note: For Magisk-based setups, a compatible WebUI launcher such as KsuWebUI Standalone or WebUI X Portable may be needed to access the module's UI.
 
-[CHANGELOG.md](https://github.com/symbuzzer/livebootmodule/blob/main/CHANGELOG.md)
+## WebUI configuration guide
 
-## LiveBoot Customization Guide
+The module still follows the original LiveBoot config format. The WebUI generates the same values that the root module expects.
 
-> [!NOTE]
-> `loader.sh`, `config` and `liveboot.apk` are in the directory `/data/adb/modules/livebootmagisk`.
+### Supported options
 
-1. Open `config` file using a text editor.
-2. Modify the settings as per your requirements (listed below). **⚠️Warning: don't add anything else (even a comment line) to the file!⚠️**
-3. Save the files and reboot your device to apply the changes.
+- Background colors: blank (default gray), dark, transparent
+- Logcat levels: V, D, I, W, E, F, S
+- Logcat buffers: M, S, R, E, C
+- Logcat formats: brief, process, tag, thread, time, threadtime
+- Logcat colors: colors, logcatnocolors
+- DMESG: 0--1 or 0-99
+- Lines: any integer value
+- Wordwrap: enabled or disabled
+- Save logs: enabled or disabled
+- Fallback width and fallback height: for screen-size spoofing
 
-#### Manual Customization Options
-
-- Background colors: ` ` (no character, it's the default LiveBoot app's gray-ish background color), `dark`, `transparent`
-- Logcat levels: `V` (Verbose), `D` (Debug), `I` (Info), `W` (Warning), `E` (Error), `F` (Fatal), `S` (Silent)
-- Logcat buffers: `M` (Main), `S` (System), `R` (Radio), `E` (Events), `C` (Crash)
-- Logcat formats: `brief`, `process`, `tag`, `thread`, `time`, `threadtime`
-- Logcat colors: `colors`, `logcatnocolors`
-- DMESG: `0--1` (off), `0-99` (on)
-- Lines: any value you want
-- Wordwrap: `wordwrap`, ` ` (no character)
-- Save logs: `save` (saves log in `/data/cache`, just like in the app), ` ` (no character)
-- Fallback width and fallback height: usually your device's screen resolution, but you can put other values to spoof another screen size
-
-#### Example Configuration
+### Example generated config
 
 ```sh
 transparent
@@ -57,10 +60,25 @@ fallbackwidth=1080
 fallbackheight=2340
 ```
 
+## Files
+
+- loader.sh: root module launcher
+- customize.sh: module install config setup
+- webroot/index.html: WebUI for configuration
+- config: generated runtime settings file used by LiveBoot
+
+## Download
+
+Use the upstream release flow or a fork release package if available in your repository.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## Licenses
 
-- loader.sh (originally 0000liveboot), liveboot.apk, libdaemonize.so files* are licensed under the [GPLv3](https://github.com/Chainfire/liveboot/blob/master/LICENSE) by [Jorrit "Chainfire" Jongma](https://github.com/Chainfire).
-- For detailed licenses: [COPYING](https://github.com/Chainfire/liveboot/blob/master/COPYING), [LICENSE](https://github.com/Chainfire/liveboot/blob/master/LICENSE)
-- Other parts of this project are licensed under [GPLv3](https://github.com/symbuzzer/livebootmagisk/blob/main/LICENSE) too.
+- loader.sh, liveboot.apk, and libdaemonize.so are based on the original Chainfire LiveBoot project and remain under the GPLv3-compatible licensing used by the original project.
+- For detailed original project license information, see the upstream Chainfire LiveBoot repository.
+- This fork adds the WebUI and project documentation under its own repository structure and remains compatible with the original module distribution model.
 
-**Source: https://github.com/Chainfire/liveboot/tree/master/liveBootAni2/src/main/java/eu/chainfire/liveboot*
+Original project source: https://github.com/Chainfire/liveboot

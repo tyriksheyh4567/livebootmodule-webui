@@ -1,5 +1,1142 @@
-<html>
-<head>
-<meta http-equiv="refresh" content="0.001;URL=https://github.com/symbuzzer/livebootmodule"> 
-</head>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LiveBoot</title>
+    <style>
+      :root {
+        --bg: #07111f;
+        --bg-2: #0b1728;
+        --panel: rgba(15, 23, 42, 0.8);
+        --panel-alt: rgba(15, 23, 42, 0.92);
+        --panel-soft: rgba(30, 41, 59, 0.72);
+        --muted: #9bb0c9;
+        --text: #e5eefb;
+        --accent: #72d5ff;
+        --accent-strong: #3b82f6;
+        --accent-soft: rgba(59, 130, 246, 0.18);
+        --border: rgba(148, 163, 184, 0.2);
+        --success: #34d399;
+        --warning: #7dd3fc;
+        --shadow: 0 18px 42px rgba(2, 6, 23, 0.52);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top, rgba(59, 130, 246, 0.18), transparent 26%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        color: var(--text);
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 36px 20px 56px;
+      }
+
+      .app {
+        width: min(1100px, 100%);
+      }
+
+      .dashboard-shell {
+        background: rgba(10, 15, 22, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 20px;
+        padding: 10px;
+      }
+
+      .header {
+        margin-bottom: 26px;
+        padding: 18px 18px 0;
+      }
+
+      .header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 3vw, 2.9rem);
+        letter-spacing: -0.04em;
+      }
+
+      .subtitle {
+        margin-top: 12px;
+        color: var(--muted);
+        line-height: 1.7;
+        max-width: 72ch;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+      }
+
+      .panel {
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: none;
+      }
+
+      .panel h2 {
+        margin: 0 0 16px;
+        font-size: 1.1rem;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .field.has-hint {
+        position: relative;
+      }
+
+      .label-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .info-icon {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 211, 252, 0.35);
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--accent);
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .info-icon::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 8px);
+        transform: translateX(-50%) translateY(4px);
+        opacity: 0;
+        pointer-events: none;
+        width: max-content;
+        max-width: 220px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(125, 211, 252, 0.28);
+        background: rgba(15, 23, 42, 0.96);
+        color: var(--text);
+        font-size: 0.72rem;
+        line-height: 1.5;
+        box-shadow: 0 12px 22px rgba(2, 6, 23, 0.35);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 20;
+      }
+
+      .info-icon.is-open::after,
+      .info-icon:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .field:last-child { margin-bottom: 0; }
+
+      label {
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      select, input, textarea, button {
+        font: inherit;
+      }
+
+      select, input[type="number"], textarea {
+        width: 100%;
+        background: var(--panel-alt);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 11px 40px 11px 12px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      select {
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%),
+          linear-gradient(to right, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.08));
+        background-position:
+          calc(100% - 18px) calc(50% - 3px),
+          calc(100% - 12px) calc(50% - 3px),
+          100% 0;
+        background-size: 6px 6px, 6px 6px, 2.5em 100%;
+        background-repeat: no-repeat;
+      }
+
+      select:focus, input:focus, textarea:focus {
+        outline: none;
+        border-color: rgba(114, 213, 255, 0.9);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+      }
+
+      textarea {
+        min-height: 220px;
+        resize: vertical;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+
+      .check-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+        gap: 8px;
+      }
+
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--panel-alt);
+      }
+
+      .check-item input {
+        accent-color: var(--accent-strong);
+        width: 16px;
+        height: 16px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .lang-select {
+        min-width: 150px;
+        background: var(--panel-soft);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 10px 38px 10px 12px;
+      }
+
+      .field-note {
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 0.74rem;
+        margin-top: -2px;
+      }
+
+      .button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: var(--text);
+        background: var(--accent-strong);
+        font-weight: 700;
+        cursor: pointer;
+        transition: filter 0.18s ease;
+      }
+
+      .button:hover { filter: brightness(1.08); }
+
+      .button.secondary {
+        background: transparent;
+        border: 1px solid var(--border);
+      }
+
+      .button.warning {
+        background: linear-gradient(180deg, rgba(125, 211, 252, 0.25), rgba(59, 130, 246, 0.18));
+        border: 1px solid rgba(125, 211, 252, 0.35);
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 0.8rem;
+        line-height: 1.5;
+      }
+
+      .two-up {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+        gap: 10px;
+      }
+
+      @media (max-width: 640px) {
+        .two-up {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <div class="dashboard-shell">
+        <header class="header">
+          <div class="header-row">
+            <div>
+              <div class="eyebrow" data-i18n="eyebrow">LiveBoot</div>
+              <h1 data-i18n="title">LiveBoot</h1>
+            </div>
+            <label style="display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.9rem;">
+              <span data-i18n="language">Language</span>
+              <select id="language" class="lang-select" aria-label="Language">
+                <option value="en">English</option>
+                <option value="ru">Русский</option>
+                <option value="es">Español</option>
+                <option value="zh">中文</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="ar">العربية</option>
+              </select>
+            </label>
+          </div>
+          <p class="subtitle" data-i18n="subtitle">
+            Configure boot animation and generated settings for your LiveBoot module.
+          </p>
+        </header>
+
+        <section class="grid">
+          <div class="panel">
+            <h2 data-i18n="panelGeneral">General</h2>
+            <div class="field-note" data-i18n="generalNote">Set the default visual behavior and log output for the LiveBoot runtime.</div>
+
+            <div class="field has-hint" data-tooltip-key="backgroundHint">
+              <div class="label-row">
+                <label for="background" data-i18n="background">Background</label>
+                <button class="info-icon" type="button" data-tooltip-key="backgroundHint" aria-label="More info">i</button>
+              </div>
+              <select id="background">
+                <option value="" data-i18n="bgDefault">Default / gray</option>
+                <option value="dark" data-i18n="bgDark">dark</option>
+                <option value="transparent" data-i18n="bgTransparent">transparent</option>
+              </select>
+            </div>
+
+          <div class="field has-hint" data-tooltip-key="levelsHint">
+            <div class="label-row">
+              <label data-i18n="logcatLevels">Logcat levels</label>
+              <button class="info-icon" type="button" data-tooltip-key="levelsHint" aria-label="More info">i</button>
+            </div>
+            <div class="check-grid" id="levels-grid">
+              <label class="check-item"><input type="checkbox" value="V" /> V</label>
+              <label class="check-item"><input type="checkbox" value="D" /> D</label>
+              <label class="check-item"><input type="checkbox" value="I" /> I</label>
+              <label class="check-item"><input type="checkbox" value="W" checked /> W</label>
+              <label class="check-item"><input type="checkbox" value="E" checked /> E</label>
+              <label class="check-item"><input type="checkbox" value="F" checked /> F</label>
+              <label class="check-item"><input type="checkbox" value="S" /> S</label>
+            </div>
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="buffersHint">
+            <div class="label-row">
+              <label data-i18n="logcatBuffers">Logcat buffers</label>
+              <button class="info-icon" type="button" data-tooltip-key="buffersHint" aria-label="More info">i</button>
+            </div>
+            <div class="check-grid" id="buffers-grid">
+              <label class="check-item"><input type="checkbox" value="M" /> M</label>
+              <label class="check-item"><input type="checkbox" value="S" /> S</label>
+              <label class="check-item"><input type="checkbox" value="R" /> R</label>
+              <label class="check-item"><input type="checkbox" value="E" /> E</label>
+              <label class="check-item"><input type="checkbox" value="C" checked /> C</label>
+            </div>
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="formatHint">
+            <div class="label-row">
+              <label for="format" data-i18n="logcatFormat">Logcat format</label>
+              <button class="info-icon" type="button" data-tooltip-key="formatHint" aria-label="More info">i</button>
+            </div>
+            <select id="format">
+              <option value="brief">brief</option>
+              <option value="process">process</option>
+              <option value="tag">tag</option>
+              <option value="thread">thread</option>
+              <option value="threadtime">threadtime</option>
+            </select>
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="colorsHint">
+            <div class="label-row">
+              <label for="colors" data-i18n="logcatColors">Logcat colors</label>
+              <button class="info-icon" type="button" data-tooltip-key="colorsHint" aria-label="More info">i</button>
+            </div>
+            <select id="colors">
+              <option value="colors">colors</option>
+              <option value="logcatnocolors" selected>logcatnocolors</option>
+            </select>
+          </div>
+        </div>
+
+          <div class="panel">
+            <h2 data-i18n="panelLayout">Output & layout</h2>
+            <div class="field-note" data-i18n="layoutNote">Adjust log verbosity, wrap behavior, and fallback sizing for compatibility on different devices.</div>
+
+            <div class="field has-hint" data-tooltip-key="dmesgHint">
+              <div class="label-row">
+                <label for="dmesg">DMESG</label>
+                <button class="info-icon" type="button" data-tooltip-key="dmesgHint" aria-label="More info">i</button>
+              </div>
+            <select id="dmesg">
+              <option value="0--1">0--1 (off)</option>
+              <option value="0-99">0-99 (on)</option>
+            </select>
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="linesHint">
+            <div class="label-row">
+              <label for="lines" data-i18n="lines">Lines</label>
+              <button class="info-icon" type="button" data-tooltip-key="linesHint" aria-label="More info">i</button>
+            </div>
+            <input id="lines" type="number" min="1" value="80" />
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="wordwrapHint">
+            <div class="label-row">
+              <label for="wordwrap" data-i18n="wordwrapLabel">Wordwrap</label>
+              <button class="info-icon" type="button" data-tooltip-key="wordwrapHint" aria-label="More info">i</button>
+            </div>
+            <div class="check-item" style="margin-top: 2px;">
+              <input id="wordwrap" type="checkbox" checked />
+              <span data-i18n="wordwrapText">Add wordwrap</span>
+            </div>
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="saveHint">
+            <div class="label-row">
+              <label for="save" data-i18n="saveLabel">Save logs</label>
+              <button class="info-icon" type="button" data-tooltip-key="saveHint" aria-label="More info">i</button>
+            </div>
+            <div class="check-item" style="margin-top: 2px;">
+              <input id="save" type="checkbox" />
+              <span data-i18n="saveText">Save to /data/cache</span>
+            </div>
+          </div>
+
+          <div class="field has-hint" data-tooltip-key="fallbackHint">
+            <div class="label-row">
+              <label data-i18n="fallbackSize">Fallback size</label>
+              <button class="info-icon" type="button" data-tooltip-key="fallbackHint" aria-label="More info">i</button>
+            </div>
+            <div class="two-up">
+              <div>
+                <input id="fallbackWidth" type="number" min="1" placeholder="1080" />
+              </div>
+              <div>
+                <input id="fallbackHeight" type="number" min="1" placeholder="2340" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+          <div class="panel" style="margin-top: 18px;">
+            <h2 data-i18n="generatedConfig">Generated config</h2>
+            <div class="field-note" data-i18n="configNote">The generated LiveBoot config is validated before it is written. Auto-save stays off by default for safety.</div>
+            <textarea id="config-output" readonly></textarea>
+
+            <div class="field has-hint" data-tooltip-key="autosaveHint" style="margin-top: 16px; margin-bottom: 0;">
+              <div class="label-row">
+                <label for="autosave" data-i18n="autosaveLabel">Auto-save</label>
+                <button class="info-icon" type="button" data-tooltip-key="autosaveHint" aria-label="More info">i</button>
+              </div>
+              <div class="check-item" style="margin-top: 2px;">
+                <input id="autosave" type="checkbox" />
+                <span data-i18n="autosaveText">Save config automatically when it changes</span>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <button class="button" type="button" id="copyBtn" data-i18n="copyConfig">Copy config</button>
+              <button class="button secondary" type="button" id="applyBtn" data-i18n="applyConfig">Apply config</button>
+              <button class="button secondary" type="button" id="downloadBtn" data-i18n="downloadConfig">Download config</button>
+              <button class="button warning secondary" type="button" id="resetBtn" data-i18n="resetDefaults">Reset defaults</button>
+            </div>
+            <p class="hint" style="margin-top: 12px;" data-i18n="hintText">
+              The UI validates the config before writing and only saves valid LiveBoot options. Auto-save is optional and off by default.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const translations = {
+        en: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: 'Configure the boot animation and generated config for your LiveBoot module.',
+          language: 'Language',
+          panelGeneral: 'General',
+          background: 'Background',
+          bgDefault: 'Default / gray',
+          bgDark: 'dark',
+          bgTransparent: 'transparent',
+          logcatLevels: 'Logcat levels',
+          logcatBuffers: 'Logcat buffers',
+          logcatFormat: 'Logcat format',
+          logcatColors: 'Logcat colors',
+          panelLayout: 'Output & layout',
+          generalNote: 'Set the default visual behavior and log output for the LiveBoot runtime.',
+          layoutNote: 'Adjust log verbosity, wrap behavior, and fallback sizing for compatibility on different devices.',
+          configNote: 'The generated LiveBoot config is validated before it is written. Auto-save stays off by default for safety.',
+          lines: 'Lines',
+          wordwrapLabel: 'Wordwrap',
+          wordwrapText: 'Add wordwrap',
+          saveLabel: 'Save logs',
+          saveText: 'Save to /data/cache',
+          fallbackSize: 'Fallback size',
+          generatedConfig: 'Generated config',
+          autosaveLabel: 'Auto-save',
+          autosaveText: 'Save config automatically when it changes',
+          backgroundHint: 'Choose the default runtime background color for the boot UI.',
+          levelsHint: 'Select which logcat severities are shown in the output. V = Verbose, D = Debug, I = Info, W = Warning, E = Error, F = Fatal, S = Silent.',
+          buffersHint: 'Choose which logcat buffers are included in the generated log stream.',
+          formatHint: 'Set the logcat output format used by the runtime.',
+          colorsHint: 'Enable or disable colored logcat output for readability.',
+          dmesgHint: 'Enable DMESG output to include kernel messages in the log.',
+          linesHint: 'Limit how many lines are kept in the live output view.',
+          wordwrapHint: 'Wrap long lines so the log stays readable on narrow screens.',
+          saveHint: 'Store the generated log output in /data/cache when enabled.',
+          fallbackHint: 'Set the fallback resolution used if the runtime cannot detect the screen size.',
+          autosaveHint: 'Automatically write the config when the generated values change and the config is valid.',
+          copyConfig: 'Copy config',
+          applyConfig: 'Apply config',
+          downloadConfig: 'Download config',
+          resetDefaults: 'Reset defaults',
+          hintText: 'The UI validates the config before writing and only saves valid LiveBoot options. Auto-save is optional and off by default.',
+          copied: 'Copied!',
+          applied: 'Applied!',
+          invalidConfig: 'Invalid config: ',
+          saveFailure: 'Could not save config automatically. Copy the config manually or run save-config.sh with root privileges.'
+        },
+        ru: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: 'Настройте анимацию загрузки и сгенерированный конфиг для вашего модуля LiveBoot.',
+          language: 'Язык',
+          panelGeneral: 'Основные',
+          background: 'Фон',
+          bgDefault: 'По умолчанию / серый',
+          bgDark: 'тёмный',
+          bgTransparent: 'прозрачный',
+          logcatLevels: 'Уровни logcat',
+          logcatBuffers: 'Буферы logcat',
+          logcatFormat: 'Формат logcat',
+          logcatColors: 'Цвета logcat',
+          panelLayout: 'Вывод и макет',
+          generalNote: 'Настройте поведение интерфейса и вывод логов для среды LiveBoot.',
+          layoutNote: 'Отрегулируйте уровень логов, перенос строк и размеры резервного экрана для совместимости с разными устройствами.',
+          configNote: 'Сгенерированный конфиг LiveBoot проверяется перед записью. Автосохранение по умолчанию отключено для безопасности.',
+          lines: 'Строки',
+          wordwrapLabel: 'Перенос строк',
+          wordwrapText: 'Добавить перенос строк',
+          saveLabel: 'Сохранять логи',
+          saveText: 'Сохранять в /data/cache',
+          fallbackSize: 'Размер резервного экрана',
+          generatedConfig: 'Сгенерированный конфиг',
+          autosaveLabel: 'Автосохранение',
+          autosaveText: 'Автоматически сохранять конфиг при изменении',
+          backgroundHint: 'Выберите фон по умолчанию для интерфейса загрузки.',
+          levelsHint: 'Укажите, какие уровни logcat должны отображаться в выводе. V = Verbose, D = Debug, I = Info, W = Warning, E = Error, F = Fatal, S = Silent.',
+          buffersHint: 'Выберите, какие буферы logcat должны быть включены в поток логов.',
+          formatHint: 'Задайте формат вывода logcat для среды выполнения.',
+          colorsHint: 'Включите или отключите цветной вывод logcat для удобства чтения.',
+          dmesgHint: 'Включите вывод DMESG, чтобы в лог попадали сообщения ядра.',
+          linesHint: 'Ограничьте количество строк, сохраняемых в живом выводе.',
+          wordwrapHint: 'Переносите длинные строки, чтобы лог оставался читаемым на узких экранах.',
+          saveHint: 'Сохраняйте вывод логов в /data/cache при включении.',
+          fallbackHint: 'Укажите резервное разрешение, если среда не может определить размер экрана.',
+          autosaveHint: 'Автоматически записывайте конфиг при изменении и при корректных значениях.',
+          copyConfig: 'Копировать',
+          applyConfig: 'Применить',
+          downloadConfig: 'Скачать',
+          resetDefaults: 'По умолчанию',
+          hintText: 'Интерфейс проверяет конфиг перед записью и сохраняет только корректные параметры LiveBoot. Автосохранение отключено по умолчанию.',
+          copied: 'Скопировано!',
+          applied: 'Применено!',
+          invalidConfig: 'Некорректный конфиг: ',
+          saveFailure: 'Не удалось сохранить конфиг автоматически. Скопируйте его вручную или запустите save-config.sh с правами root.'
+        },
+        es: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: 'Configura la animación de arranque y el archivo generado para tu módulo LiveBoot.',
+          language: 'Idioma',
+          panelGeneral: 'General',
+          background: 'Fondo',
+          bgDefault: 'Predeterminado / gris',
+          bgDark: 'oscuro',
+          bgTransparent: 'transparente',
+          logcatLevels: 'Niveles de logcat',
+          logcatBuffers: 'Búferes de logcat',
+          logcatFormat: 'Formato de logcat',
+          logcatColors: 'Colores de logcat',
+          panelLayout: 'Salida y diseño',
+          generalNote: 'Configura el comportamiento visual predeterminado y la salida de registros del entorno LiveBoot.',
+          layoutNote: 'Ajusta la verbosidad de los registros, el ajuste de línea y el tamaño de respaldo para compatibilidad con distintos dispositivos.',
+          configNote: 'La configuración generada de LiveBoot se valida antes de escribirla. El guardado automático está desactivado por seguridad.',
+          lines: 'Líneas',
+          wordwrapLabel: 'Ajuste de línea',
+          wordwrapText: 'Activar ajuste de línea',
+          saveLabel: 'Guardar registros',
+          saveText: 'Guardar en /data/cache',
+          fallbackSize: 'Tamaño alternativo',
+          generatedConfig: 'Configuración generada',
+          autosaveLabel: 'Guardado automático',
+          autosaveText: 'Guardar la configuración automáticamente al cambiar',
+          backgroundHint: 'Elige el fondo predeterminado para la interfaz de arranque.',
+          levelsHint: 'Selecciona qué niveles de logcat se muestran en la salida. V = Verbose, D = Debug, I = Info, W = Warning, E = Error, F = Fatal, S = Silent.',
+          buffersHint: 'Elige qué búferes de logcat se incluyen en la salida del registro.',
+          formatHint: 'Establece el formato de salida de logcat del entorno.',
+          colorsHint: 'Activa o desactiva los colores del registro para una mejor lectura.',
+          dmesgHint: 'Activa la salida de DMESG para incluir mensajes del kernel en el registro.',
+          linesHint: 'Limita la cantidad de líneas que se conservan en la salida en vivo.',
+          wordwrapHint: 'Ajusta líneas largas para que el registro siga siendo legible en pantallas estrechas.',
+          saveHint: 'Guarda la salida en /data/cache cuando esta opción está activada.',
+          fallbackHint: 'Fija la resolución de reserva cuando el entorno no detecta el tamaño de pantalla.',
+          autosaveHint: 'Guarda la configuración automáticamente cuando cambie y sea válida.',
+          copyConfig: 'Copiar configuración',
+          applyConfig: 'Aplicar configuración',
+          downloadConfig: 'Descargar configuración',
+          resetDefaults: 'Restablecer',
+          hintText: 'La interfaz valida la configuración antes de escribir y solo guarda opciones válidas de LiveBoot. El guardado automático es opcional y está desactivado por defecto.',
+          copied: '¡Copiado!',
+          applied: '¡Aplicado!',
+          invalidConfig: 'Configuración no válida: ',
+          saveFailure: 'No se pudo guardar automáticamente. Copia la configuración manualmente o ejecuta save-config.sh con permisos de root.'
+        },
+        zh: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: '配置你的 LiveBoot 模块启动动画和生成配置。',
+          language: '语言',
+          panelGeneral: '常规',
+          background: '背景',
+          bgDefault: '默认 / 灰色',
+          bgDark: '深色',
+          bgTransparent: '透明',
+          logcatLevels: 'Logcat 级别',
+          logcatBuffers: 'Logcat 缓冲区',
+          logcatFormat: 'Logcat 格式',
+          logcatColors: 'Logcat 颜色',
+          panelLayout: '输出与布局',
+          generalNote: '设置 LiveBoot 运行环境的默认视觉行为和日志输出。',
+          layoutNote: '调整日志详细程度、自动换行和备用分辨率，以兼容不同设备。',
+          configNote: '生成的 LiveBoot 配置会在写入前进行校验。出于安全考虑，自动保存默认关闭。',
+          lines: '行数',
+          wordwrapLabel: '自动换行',
+          wordwrapText: '启用自动换行',
+          saveLabel: '保存日志',
+          saveText: '保存到 /data/cache',
+          fallbackSize: '备用分辨率',
+          generatedConfig: '生成的配置',
+          autosaveLabel: '自动保存',
+          autosaveText: '配置更新时自动保存',
+          backgroundHint: '选择启动界面的默认背景色。',
+          levelsHint: '选择哪些 logcat 级别应显示在输出中。V = Verbose（详细）、D = Debug（调试）、I = Info（信息）、W = Warning（警告）、E = Error（错误）、F = Fatal（致命）、S = Silent（静默）。',
+          buffersHint: '选择哪些 logcat 缓冲区应包含在日志流中。',
+          formatHint: '设置运行环境使用的 logcat 输出格式。',
+          colorsHint: '启用或禁用 logcat 的彩色输出以提高可读性。',
+          dmesgHint: '启用 DMESG 输出，将内核消息包含在日志中。',
+          linesHint: '限制实时输出中保留的最大行数。',
+          wordwrapHint: '自动换行长日志，以便在窄屏上更易阅读。',
+          saveHint: '启用后将日志输出保存到 /data/cache。',
+          fallbackHint: '若运行环境无法检测屏幕分辨率，则使用此备用分辨率。',
+          autosaveHint: '当生成值发生变化且配置有效时，自动写入配置。',
+          copyConfig: '复制配置',
+          applyConfig: '应用配置',
+          downloadConfig: '下载配置',
+          resetDefaults: '恢复默认',
+          hintText: '界面会在写入前校验配置，仅保存有效的 LiveBoot 选项。自动保存是可选的，默认关闭。',
+          copied: '已复制！',
+          applied: '已应用！',
+          invalidConfig: '配置无效：',
+          saveFailure: '无法自动保存配置。请手动复制配置，或以 root 权限运行 save-config.sh。'
+        },
+        ja: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: 'LiveBoot モジュールの起動アニメーションと生成設定をカスタマイズします。',
+          language: '言語',
+          panelGeneral: '一般',
+          background: '背景',
+          bgDefault: 'デフォルト / グレー',
+          bgDark: 'ダーク',
+          bgTransparent: '透過',
+          logcatLevels: 'Logcat レベル',
+          logcatBuffers: 'Logcat バッファ',
+          logcatFormat: 'Logcat 形式',
+          logcatColors: 'Logcat 色',
+          panelLayout: '出力とレイアウト',
+          generalNote: 'LiveBoot 実行環境の既定の見た目とログ出力を設定します。',
+          layoutNote: 'ログの冗長さ、改行挙動、代替サイズを調整して、さまざまな端末に対応させます。',
+          configNote: '生成された LiveBoot 設定は書き込み前に検証されます。安全のため、自動保存は既定でオフです。',
+          lines: '行数',
+          wordwrapLabel: '改行',
+          wordwrapText: '自動改行を有効にする',
+          saveLabel: 'ログ保存',
+          saveText: '/data/cache に保存',
+          fallbackSize: '代替サイズ',
+          generatedConfig: '生成された設定',
+          autosaveLabel: '自動保存',
+          autosaveText: '変更時に設定を自動保存',
+          backgroundHint: '起動画面の既定背景色を選択します。',
+          levelsHint: '表示する logcat レベルを選択します。V = Verbose（詳細）、D = Debug（デバッグ）、I = Info（情報）、W = Warning（警告）、E = Error（エラー）、F = Fatal（致命的）、S = Silent（無音）。',
+          buffersHint: 'ログに含める logcat バッファを選択します。',
+          formatHint: '実行環境で使う logcat 出力形式を設定します。',
+          colorsHint: '読みやすさのために logcat の色付き出力を切り替えます。',
+          dmesgHint: 'DMESG 出力を有効にして、カーネルメッセージをログに追加します。',
+          linesHint: 'ライブ出力で保持する最大行数を制限します。',
+          wordwrapHint: '長い行を折り返して、狭い画面でも読みやすくします。',
+          saveHint: '有効時にログ出力を /data/cache に保存します。',
+          fallbackHint: '画面サイズを検出できない場合に使う代替解像度を設定します。',
+          autosaveHint: '生成値が変わり、設定が有効なときに自動で書き込みます。',
+          copyConfig: '設定をコピー',
+          applyConfig: '設定を適用',
+          downloadConfig: '設定をダウンロード',
+          resetDefaults: '初期化',
+          hintText: '保存前に設定を検証し、有効な LiveBoot オプションだけを保存します。自動保存はオプションで、デフォルトでは無効です。',
+          copied: 'コピーしました！',
+          applied: '適用しました！',
+          invalidConfig: '無効な設定: ',
+          saveFailure: '自動保存できませんでした。手動でコピーするか、root 権限で save-config.sh を実行してください。'
+        },
+        ko: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: 'LiveBoot 모듈의 부트 애니메이션과 생성 설정을 구성하세요.',
+          language: '언어',
+          panelGeneral: '일반',
+          background: '배경',
+          bgDefault: '기본값 / 회색',
+          bgDark: '어두움',
+          bgTransparent: '투명',
+          logcatLevels: 'Logcat 수준',
+          logcatBuffers: 'Logcat 버퍼',
+          logcatFormat: 'Logcat 형식',
+          logcatColors: 'Logcat 색상',
+          panelLayout: '출력 및 레이아웃',
+          generalNote: 'LiveBoot 실행 환경의 기본 시각 동작과 로그 출력을 설정합니다.',
+          layoutNote: '로그 상세도, 줄바꿈 동작, 대체 크기를 조정해 다양한 기기와 호환되도록 합니다.',
+          configNote: '생성된 LiveBoot 설정은 저장 전에 검증됩니다. 안전을 위해 자동 저장은 기본적으로 비활성화됩니다.',
+          lines: '줄 수',
+          wordwrapLabel: '자동 줄바꿈',
+          wordwrapText: '자동 줄바꿈 사용',
+          saveLabel: '로그 저장',
+          saveText: '/data/cache에 저장',
+          fallbackSize: '대체 크기',
+          generatedConfig: '생성된 설정',
+          autosaveLabel: '자동 저장',
+          autosaveText: '변경 시 설정을 자동으로 저장',
+          backgroundHint: '부트 인터페이스의 기본 배경색을 선택합니다.',
+          levelsHint: '출력에 표시할 logcat 수준을 선택합니다. V = Verbose(상세), D = Debug(디버그), I = Info(정보), W = Warning(경고), E = Error(오류), F = Fatal(치명적), S = Silent(무음).',
+          buffersHint: '로그 스트림에 포함할 logcat 버퍼를 선택합니다.',
+          formatHint: '실행 환경에서 사용할 logcat 출력 형식을 설정합니다.',
+          colorsHint: '가독성을 위해 logcat 색상 출력을 켜거나 끕니다.',
+          dmesgHint: 'DMESG 출력을 활성화해 커널 메시지를 로그에 포함합니다.',
+          linesHint: '실시간 출력에서 유지할 최대 줄 수를 제한합니다.',
+          wordwrapHint: '긴 줄을 자동으로 줄바꿈해 좁은 화면에서도 읽기 쉽게 합니다.',
+          saveHint: '활성화하면 로그 출력을 /data/cache에 저장합니다.',
+          fallbackHint: '실행 환경이 화면 크기를 감지하지 못할 때 사용할 대체 해상도를 설정합니다.',
+          autosaveHint: '생성된 값이 바뀌고 설정이 유효할 때 자동으로 저장합니다.',
+          copyConfig: '설정 복사',
+          applyConfig: '설정 적용',
+          downloadConfig: '설정 다운로드',
+          resetDefaults: '기본값 복원',
+          hintText: '저장 전에 설정을 검증하고 유효한 LiveBoot 옵션만 저장합니다. 자동 저장은 선택 사항이며 기본값은 비활성화됩니다.',
+          copied: '복사됨!',
+          applied: '적용됨!',
+          invalidConfig: '잘못된 설정: ',
+          saveFailure: '설정을 자동으로 저장할 수 없습니다. 수동으로 복사하거나 root 권한으로 save-config.sh를 실행하세요.'
+        },
+        ar: {
+          eyebrow: 'LiveBoot',
+          title: 'LiveBoot',
+          subtitle: 'قم بتكوين رسومات التشغيل والإعدادات المولّدة لموديول LiveBoot الخاص بك.',
+          language: 'اللغة',
+          panelGeneral: 'عام',
+          background: 'الخلفية',
+          bgDefault: 'افتراضي / رمادي',
+          bgDark: 'داكن',
+          bgTransparent: 'شفاف',
+          logcatLevels: 'مستويات Logcat',
+          logcatBuffers: 'تخزين Logcat',
+          logcatFormat: 'تنسيق Logcat',
+          logcatColors: 'ألوان Logcat',
+          panelLayout: 'الإخراج والتخطيط',
+          generalNote: 'حدد السلوك البصري الافتراضي ومخرجات السجل لبيئة LiveBoot.',
+          layoutNote: 'اضبط مستوى تفاصيل السجل، وتفاف النص، وحجم الاحتياط للتوافق مع أجهزة مختلفة.',
+          configNote: 'يتم التحقق من إعدادات LiveBoot المولدة قبل كتابتها. الحفظ التلقائي مغلق افتراضيًا لأسباب أمنية.',
+          lines: 'الأسطر',
+          wordwrapLabel: 'التفاف النص',
+          wordwrapText: 'تفعيل التفاف النص',
+          saveLabel: 'حفظ السجلات',
+          saveText: 'حفظ في /data/cache',
+          fallbackSize: 'حجم احتياطي',
+          generatedConfig: 'الإعدادات المولدة',
+          autosaveLabel: 'الحفظ التلقائي',
+          autosaveText: 'حفظ الإعدادات تلقائيًا عند التغيير',
+          backgroundHint: 'اختر اللون الافتراضي لخلفية واجهة التشغيل.',
+          levelsHint: 'حدد مستويات Logcat التي ستظهر في الإخراج. V = Verbose (مفصل)، D = Debug (تصحيح)، I = Info (معلومات)، W = Warning (تحذير)، E = Error (خطأ)، F = Fatal (حرج)، S = Silent (صامت).',
+          buffersHint: 'اختر التخزينات التي ستُضمّن في تدفق السجل.',
+          formatHint: 'حدد تنسيق إخراج Logcat المستخدم في البيئة.',
+          colorsHint: 'فعّل أو عطّل ألوان السجل لسهولة القراءة.',
+          dmesgHint: 'فعّل إخراج DMESG ليشمل رسائل النواة في السجل.',
+          linesHint: 'حدد عدد الأسطر التي ستُبقيها شاشة الإخراج المباشر.',
+          wordwrapHint: 'اقطع الأسطر الطويلة لتبقى سهلة القراءة على الشاشات الضيقة.',
+          saveHint: 'عند التفعيل، يتم حفظ إخراج السجل في /data/cache.',
+          fallbackHint: 'حدد دقة احتياطية إذا لم تتمكن البيئة من اكتشاف حجم الشاشة.',
+          autosaveHint: 'احفظ الإعدادات تلقائيًا عندما تتغير وتكون صالحة.',
+          copyConfig: 'نسخ الإعدادات',
+          applyConfig: 'تطبيق الإعدادات',
+          downloadConfig: 'تحميل الإعدادات',
+          resetDefaults: 'استعادة الافتراضي',
+          hintText: 'تتحقق الواجهة من الإعدادات قبل الحفظ وتسمح فقط بخيارات LiveBoot الصحيحة. الحفظ التلقائي اختياري ومغلق افتراضيًا.',
+          copied: 'تم النسخ!',
+          applied: 'تم التطبيق!',
+          invalidConfig: 'إعدادات غير صالحة: ',
+          saveFailure: 'تعذّر الحفظ التلقائي. انسخ الإعدادات يدويًا أو شغّل save-config.sh بصلاحيات الجذر.'
+        }
+      };
+
+      const defaults = {
+        background: '',
+        levels: ['W', 'E', 'F'],
+        buffers: ['C'],
+        format: 'brief',
+        colors: 'logcatnocolors',
+        dmesg: '0--1',
+        lines: 80,
+        wordwrap: true,
+        save: false,
+        width: '',
+        height: '',
+        autosave: false
+      };
+
+      const elements = {
+        background: document.getElementById('background'),
+        format: document.getElementById('format'),
+        colors: document.getElementById('colors'),
+        dmesg: document.getElementById('dmesg'),
+        lines: document.getElementById('lines'),
+        wordwrap: document.getElementById('wordwrap'),
+        save: document.getElementById('save'),
+        fallbackWidth: document.getElementById('fallbackWidth'),
+        fallbackHeight: document.getElementById('fallbackHeight'),
+        autosave: document.getElementById('autosave'),
+        language: document.getElementById('language'),
+        output: document.getElementById('config-output'),
+        copyBtn: document.getElementById('copyBtn'),
+        applyBtn: document.getElementById('applyBtn'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        resetBtn: document.getElementById('resetBtn')
+      };
+
+      function getSelectedValues(name) {
+        return [...document.querySelectorAll(`#${name}-grid input:checked`)].map((input) => input.value);
+      }
+
+      function applyDefaultValues() {
+        elements.background.value = defaults.background;
+        elements.format.value = defaults.format;
+        elements.colors.value = defaults.colors;
+        elements.dmesg.value = defaults.dmesg;
+        elements.lines.value = defaults.lines;
+        elements.wordwrap.checked = defaults.wordwrap;
+        elements.save.checked = defaults.save;
+        elements.fallbackWidth.value = defaults.width;
+        elements.fallbackHeight.value = defaults.height;
+
+        document.querySelectorAll('#levels-grid input').forEach((input) => {
+          input.checked = defaults.levels.includes(input.value);
+        });
+
+        document.querySelectorAll('#buffers-grid input').forEach((input) => {
+          input.checked = defaults.buffers.includes(input.value);
+        });
+      }
+
+      const VALID_LOGCAT_LEVELS = ['V', 'D', 'I', 'W', 'E', 'F', 'S'];
+      const VALID_LOGCAT_BUFFERS = ['M', 'S', 'R', 'E', 'C'];
+      const VALID_FORMATS = ['brief', 'process', 'tag', 'thread', 'threadtime'];
+      const VALID_COLORS = ['colors', 'logcatnocolors'];
+      const VALID_DMESG = ['0--1', '0-99'];
+      const VALID_BACKGROUNDS = ['', 'dark', 'transparent'];
+
+      function validateConfig(configText) {
+        const lines = configText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+
+        if (!lines.length) return { valid: false, reason: 'Empty config is not allowed.' };
+
+        const allowedFirstLine = (line) => VALID_BACKGROUNDS.includes(line);
+        const allowedKeyValue = (line) => {
+          if (line.startsWith('logcatlevels=')) {
+            const value = line.slice('logcatlevels='.length);
+            return value.split('').every((c) => VALID_LOGCAT_LEVELS.includes(c));
+          }
+          if (line.startsWith('logcatbuffers=')) {
+            const value = line.slice('logcatbuffers='.length);
+            return value.split('').every((c) => VALID_LOGCAT_BUFFERS.includes(c));
+          }
+          if (line.startsWith('logcatformat=')) {
+            const value = line.slice('logcatformat='.length);
+            return VALID_FORMATS.includes(value);
+          }
+          if (line.startsWith('dmesg=')) {
+            const value = line.slice('dmesg='.length);
+            return VALID_DMESG.includes(value);
+          }
+          if (line.startsWith('lines=')) {
+            const value = Number(line.slice('lines='.length));
+            return Number.isInteger(value) && value > 0;
+          }
+          if (line.startsWith('fallbackwidth=')) {
+            const value = Number(line.slice('fallbackwidth='.length));
+            return Number.isInteger(value) && value > 0;
+          }
+          if (line.startsWith('fallbackheight=')) {
+            const value = Number(line.slice('fallbackheight='.length));
+            return Number.isInteger(value) && value > 0;
+          }
+          return ['dark', 'transparent', 'wordwrap', 'save', 'colors', 'logcatnocolors'].includes(line);
+        };
+
+        for (const line of lines) {
+          if (line.startsWith('logcatlevels=') || line.startsWith('logcatbuffers=') || line.startsWith('logcatformat=') || line.startsWith('dmesg=') || line.startsWith('lines=') || line.startsWith('fallbackwidth=') || line.startsWith('fallbackheight=')) {
+            if (!allowedKeyValue(line)) {
+              return { valid: false, reason: `Invalid config value: ${line}` };
+            }
+            continue;
+          }
+
+          if (line === 'dark' || line === 'transparent' || line === 'wordwrap' || line === 'save' || line === 'colors' || line === 'logcatnocolors') {
+            continue;
+          }
+
+          if (allowedFirstLine(line)) {
+            continue;
+          }
+
+          return { valid: false, reason: `Unsupported option: ${line}` };
+        }
+
+        return { valid: true };
+      }
+
+      function buildConfig() {
+        const lines = [];
+
+        const background = elements.background.value.trim();
+        if (background) lines.push(background);
+
+        const levels = getSelectedValues('levels');
+        if (levels.length) lines.push(`logcatlevels=${levels.join('')}`);
+
+        const buffers = getSelectedValues('buffers');
+        if (buffers.length) lines.push(`logcatbuffers=${buffers.join('')}`);
+
+        lines.push(`logcatformat=${elements.format.value}`);
+        lines.push(elements.colors.value);
+        lines.push(`dmesg=${elements.dmesg.value}`);
+        lines.push(`lines=${Math.max(1, Number(elements.lines.value) || 1)}`);
+
+        if (elements.wordwrap.checked) lines.push('wordwrap');
+        if (elements.save.checked) lines.push('save');
+
+        const width = Number(elements.fallbackWidth.value);
+        const height = Number(elements.fallbackHeight.value);
+
+        if (Number.isFinite(width) && width > 0) {
+          lines.push(`fallbackwidth=${width}`);
+        }
+
+        if (Number.isFinite(height) && height > 0) {
+          lines.push(`fallbackheight=${height}`);
+        }
+
+        return lines.join('\n');
+      }
+
+      function updateOutput() {
+        const config = buildConfig();
+        const result = validateConfig(config);
+        elements.output.value = config;
+        elements.output.style.borderColor = result.valid ? 'rgba(148, 163, 184, 0.2)' : '#f0883e';
+        if (elements.autosave.checked && result.valid) {
+          applyConfig(true);
+        }
+      }
+
+      function getCurrentLanguage() {
+        const saved = localStorage.getItem('liveboot-ui-language');
+        if (saved && translations[saved]) return saved;
+        const browser = (navigator.language || 'en').toLowerCase();
+        if (browser.startsWith('ru')) return 'ru';
+        if (browser.startsWith('es')) return 'es';
+        if (browser.startsWith('zh')) return 'zh';
+        if (browser.startsWith('ja')) return 'ja';
+        if (browser.startsWith('ko')) return 'ko';
+        if (browser.startsWith('ar')) return 'ar';
+        return 'en';
+      }
+
+      function applyTranslations(lang = getCurrentLanguage()) {
+        const current = translations[lang] || translations.en;
+        document.querySelectorAll('[data-i18n]').forEach((node) => {
+          const key = node.dataset.i18n;
+          if (current[key]) node.textContent = current[key];
+        });
+
+          document.querySelectorAll('[data-tooltip-key]').forEach((node) => {
+          const key = node.dataset.tooltipKey;
+          if (current[key]) node.dataset.tooltip = current[key];
+        });
+
+        document.querySelectorAll('.info-icon').forEach((button) => {
+          button.setAttribute('aria-label', button.dataset.tooltipKey ? (current[button.dataset.tooltipKey] || 'More info') : 'More info');
+          if (!button.dataset.tooltip) {
+            button.dataset.tooltip = current[button.dataset.tooltipKey] || 'More info';
+          }
+        });
+
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        elements.language.value = lang;
+        localStorage.setItem('liveboot-ui-language', lang);
+      }
+
+      function copyConfig() {
+        const config = elements.output.value;
+        navigator.clipboard.writeText(config).then(() => {
+          const original = elements.copyBtn.textContent;
+          const lang = getCurrentLanguage();
+          elements.copyBtn.textContent = translations[lang].copied;
+          setTimeout(() => {
+            elements.copyBtn.textContent = original;
+          }, 1200);
+        }).catch(() => {
+          elements.output.focus();
+          elements.output.select();
+          document.execCommand('copy');
+        });
+      }
+
+      function downloadConfig() {
+        const blob = new Blob([elements.output.value], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'config';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function applyConfig(force = false) {
+        const config = elements.output.value;
+        const validation = validateConfig(config);
+
+        if (!validation.valid && !force) {
+          const lang = getCurrentLanguage();
+          alert(`${translations[lang].invalidConfig}${validation.reason}`);
+          return;
+        }
+
+        const url = `save-config.sh?config=${encodeURIComponent(config)}`;
+
+        try {
+          const response = await fetch(url, { method: 'GET' });
+          const text = await response.text();
+
+          if (!response.ok) {
+            throw new Error(text || 'Failed to save config');
+          }
+
+          const original = elements.applyBtn.textContent;
+          const lang = getCurrentLanguage();
+          elements.applyBtn.textContent = translations[lang].applied;
+          setTimeout(() => {
+            elements.applyBtn.textContent = original;
+          }, 1400);
+        } catch (error) {
+          const lang = getCurrentLanguage();
+          alert(translations[lang].saveFailure);
+        }
+      }
+
+      document.querySelectorAll('.info-icon').forEach((button) => {
+        button.addEventListener('click', () => {
+          const isOpen = button.classList.contains('is-open');
+          document.querySelectorAll('.info-icon').forEach((other) => other.classList.remove('is-open'));
+          button.classList.toggle('is-open', !isOpen);
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('.info-icon')) {
+          document.querySelectorAll('.info-icon').forEach((button) => button.classList.remove('is-open'));
+        }
+      });
+
+      document.querySelectorAll('select, input').forEach((control) => {
+        control.addEventListener('input', updateOutput);
+        control.addEventListener('change', updateOutput);
+      });
+
+      elements.language.addEventListener('change', (event) => {
+        applyTranslations(event.target.value);
+      });
+
+      elements.copyBtn.addEventListener('click', copyConfig);
+      elements.applyBtn.addEventListener('click', () => applyConfig(false));
+      elements.downloadBtn.addEventListener('click', downloadConfig);
+      elements.resetBtn.addEventListener('click', () => {
+        applyDefaultValues();
+        updateOutput();
+      });
+
+      applyDefaultValues();
+      applyTranslations(getCurrentLanguage());
+      updateOutput();
+    </script>
+  </body>
 </html>
